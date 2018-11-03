@@ -5,6 +5,7 @@ public class Bank {
 	private Interface ui;
 	private Scanner sc;
 	private double accountBalance;
+	private String user;
 	private BankDAO dao;
 
 	public Bank() {
@@ -12,6 +13,7 @@ public class Bank {
 		sc = new Scanner(System.in);
 		accountBalance = 0;
 		dao = new BankDAO();
+		user = "";
 	}
 
 	public void show() {
@@ -29,6 +31,10 @@ public class Bank {
 					flag = false;
 					break;
 				case 2:
+					this.register();
+					flag = false;
+					break;
+				case 3:
 					System.out.println("Zapraszamy ponownie.");
 					flag = false;
 					break;
@@ -74,10 +80,34 @@ public class Bank {
 		String password = sc.nextLine();
 
 		if (dao.checkCredentials(name, password)) {
+			this.user = name;
 			this.showUi();
 		} else {
 			System.out.println("Poda³eœ b³êdny login lub has³o.");
 		}
+	}
+
+	private void register() {
+		System.out.println("Podaj nazwê u¿ytkownika: ");
+		String user = sc.nextLine();
+		System.out.println("Podaj has³o: ");
+		String password = sc.nextLine();
+
+		if (user.length() > 0 && password.length() > 0) {
+			if (!dao.checkUser(user)) {
+				if (dao.registerUser(user, password)) {
+					System.out.println("Zosta³eœ zarejestrowany. ");
+				} else {
+					System.out.println("Wyst¹pi³ b³¹d podczas rejestracji. Spróbuj ponownie za chwilê. ");
+				}
+			} else {
+				System.out.println("Taki u¿ytkownik ju¿ istnieje. ");
+			}
+
+		} else {
+			System.out.println("Nazwa u¿ytkownika i has³o musz¹ posiadaæ min. 1 znak. ");
+		}
+
 	}
 
 	private void logout() {
@@ -89,7 +119,7 @@ public class Bank {
 
 		try {
 			double sum = sc.nextDouble();
-			if (dao.deposit(sum)) {
+			if (dao.deposit(this.user, sum)) {
 				System.out.print("Transakcja zakoñczona pomyœlnie. ");
 			} else {
 				System.out.println("B³¹d z po³¹czeniem do bazy. Transakcja zakoñczona niepowodzeniem. ");
@@ -108,7 +138,7 @@ public class Bank {
 		try {
 			double sum = sc.nextDouble();
 
-			if (dao.withdraw(sum)) {
+			if (dao.withdraw(this.user, sum)) {
 				System.out.print("Transakcja zakoñczona pomyœlnie. ");
 			} else {
 				System.out.print("Nie mo¿na zrealizowaæ transakcji. Brak wystarczaj¹cych œrodków na koncie. ");
@@ -122,7 +152,7 @@ public class Bank {
 	}
 
 	private void checkBalance() {
-		accountBalance = dao.checkBalance();
+		accountBalance = dao.checkBalance(this.user);
 		System.out.printf("Stan twojego konta wynosi: %.2f \n\n", accountBalance);
 		this.showUi();
 	}

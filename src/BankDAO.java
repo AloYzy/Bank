@@ -35,11 +35,30 @@ public class BankDAO {
 		return exists;
 	}
 
-	public boolean deposit(double sum) {
+	public boolean checkUser(String user) {
 
-		String finalBalance = String.valueOf(this.checkBalance() + sum);
+		boolean exists = true;
+		query = String.format("select * from users where user = '%s'", user);
+
+		try {
+			Class.forName(DBDRIVER);
+			connection = DriverManager.getConnection(DBURL, DBUSER, DBPASS);
+			statement = connection.createStatement();
+			result = statement.executeQuery(query);
+			if (!result.next()) {
+				exists = false;
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return exists;
+	}
+
+	public boolean registerUser(String user, String password) {
+
 		boolean success = false;
-		query = String.format("update users set balance = %s where user = '%s'", finalBalance, "a");
+		query = String.format("insert into users (user, password, balance) values ('%s', '%s', 0)", user, password);
 
 		try {
 			Class.forName(DBDRIVER);
@@ -53,13 +72,32 @@ public class BankDAO {
 		return success;
 	}
 
-	public boolean withdraw(double sum) {
+	public boolean deposit(String user, double sum) {
 
-		double finalBalance = this.checkBalance() - sum;
+		String finalBalance = String.valueOf(this.checkBalance(user) + sum);
+		boolean success = false;
+		query = String.format("update users set balance = %s where user = '%s'", finalBalance, user);
+
+		try {
+			Class.forName(DBDRIVER);
+			connection = DriverManager.getConnection(DBURL, DBUSER, DBPASS);
+			statement = connection.createStatement();
+			statement.executeUpdate(query);
+			success = true;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return success;
+	}
+
+	public boolean withdraw(String user, double sum) {
+
+		double finalBalance = this.checkBalance(user) - sum;
 		boolean success = false;
 
 		if (finalBalance > 0) {
-			query = String.format("update users set balance = %s where user = '%s'", String.valueOf(finalBalance), "a");
+			query = String.format("update users set balance = %s where user = '%s'", String.valueOf(finalBalance),
+					user);
 
 			try {
 				Class.forName(DBDRIVER);
@@ -74,10 +112,10 @@ public class BankDAO {
 		return success;
 	}
 
-	public double checkBalance() {
+	public double checkBalance(String user) {
 
 		double balance = -1.0;
-		query = String.format("select balance from users where user = '%s'", "a");
+		query = String.format("select balance from users where user = '%s'", user);
 
 		try {
 			Class.forName(DBDRIVER);

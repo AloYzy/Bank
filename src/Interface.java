@@ -14,7 +14,8 @@ public class Interface {
 		System.out.println("Witaj na g³ównej stronie banku.");
 		System.out.println("-------------------------------\n");
 		System.out.println("1. Zaloguj siê.");
-		System.out.println("2. WyjdŸ.");
+		System.out.println("2. Zarejestruj siê.");
+		System.out.println("3. WyjdŸ.");
 	}
 
 }
